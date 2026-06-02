@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zomato India Analytics — Parthh Kapadia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d14;color:#e8e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh}
+header{background:#12121c;border-bottom:1px solid #2a2a3a;padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.logo{font-size:1.1rem;font-weight:700;letter-spacing:-0.5px}
+.logo span{color:#e8473f}
+.badge{background:#1a1a28;border:1px solid #2a2a3a;padding:4px 12px;border-radius:20px;font-size:0.75rem;color:#aaa}
+.hero{padding:2.5rem 2rem 1.5rem;max-width:1300px;margin:0 auto}
+.hero h1{font-size:2rem;font-weight:800;letter-spacing:-1px;margin-bottom:0.5rem}
+.hero h1 em{font-style:normal;color:#e8473f}
+.hero p{color:#7a7a9a;font-size:0.9rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;max-width:1300px;margin:0 auto 1.5rem;padding:0 2rem}
+.kpi{background:#1a1a26;border:1px solid #2a2a3a;border-radius:10px;padding:1.1rem 1.3rem}
+.kpi-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#7a7a9a;margin-bottom:6px}
+.kpi-val{font-size:1.9rem;font-weight:800;color:#fff;line-height:1}
+.kpi-sub{font-size:0.72rem;color:#7a7a9a;margin-top:3px}
+.filters{max-width:1300px;margin:0 auto 1.5rem;padding:0 2rem;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.filters label{font-size:0.8rem;color:#7a7a9a;text-transform:uppercase;letter-spacing:1px}
+.filters select{background:#1a1a26;border:1px solid #2a2a3a;color:#e8e8f0;padding:7px 12px;border-radius:8px;font-size:0.85rem;cursor:pointer;outline:none}
+.filters select:focus{border-color:#e8473f}
+.filters button{background:transparent;border:1px solid #2a2a3a;color:#7a7a9a;padding:7px 14px;border-radius:8px;font-size:0.85rem;cursor:pointer}
+.filters button:hover{border-color:#e8473f;color:#e8473f}
+.grid{max-width:1300px;margin:0 auto;padding:0 2rem 3rem;display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+.card{background:#1a1a26;border:1px solid #2a2a3a;border-radius:12px;padding:1.4rem}
+.card.full{grid-column:1/-1}
+.card-title{font-size:0.95rem;font-weight:700;margin-bottom:3px}
+.card-sub{font-size:0.75rem;color:#7a7a9a;margin-bottom:1rem}
+footer{text-align:center;padding:1.5rem;color:#555;font-size:0.8rem;border-top:1px solid #1e1e2e}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.card.full{grid-column:1}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Zomato <span>India</span> Analytics</div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span style="font-size:0.8rem;color:#aaa">by <strong style="color:#fff">Parthh Kapadia</strong></span>
+    <span class="badge">Baruch College · CIS</span>
+    <span class="badge">224,520 restaurants</span>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>India's Restaurant <em>Data Story</em></h1>
+  <p>Interactive analysis of 224,520 restaurants across India from the Zomato dataset · Data Analytics Project</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">Total Restaurants</div><div class="kpi-val" id="k1">224,520</div><div class="kpi-sub">across India</div></div>
+  <div class="kpi"><div class="kpi-label">Cities Covered</div><div class="kpi-val" id="k2">50+</div><div class="kpi-sub">unique cities</div></div>
+  <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-val" id="k3">3.51</div><div class="kpi-sub">out of 5.0</div></div>
+  <div class="kpi"><div class="kpi-label">Online Delivery</div><div class="kpi-val" id="k4">49.6%</div><div class="kpi-sub">offer delivery</div></div>
+</div>
+
+<div class="filters">
+  <label>City</label>
+  <select id="fcity" onchange="applyFilters()">
+    <option value="all">All Cities</option>
+    <option>Delhi NCR</option><option>Mumbai</option><option>Bengaluru</option>
+    <option>Pune</option><option>Hyderabad</option><option>Chennai</option>
+    <option>Kolkata</option><option>Ahmedabad</option><option>Jaipur</option><option>Chandigarh</option>
+  </select>
+  <label>Cuisine</label>
+  <select id="fcuisine" onchange="applyFilters()">
+    <option value="all">All Cuisines</option>
+    <option>North Indian</option><option>Chinese</option><option>Fast Food</option>
+    <option>South Indian</option><option>Beverages</option><option>Biryani</option>
+    <option>Desserts</option><option>Bakery</option><option>Street Food</option><option>Mughlai</option>
+  </select>
+  <button onclick="document.getElementById('fcity').value='all';document.getElementById('fcuisine').value='all';applyFilters()">Reset</button>
+</div>
+
+<div class="grid">
+  <div class="card full">
+    <div class="card-title">Top 10 Cities by Restaurant Count</div>
+    <div class="card-sub">Which cities have the most food options on Zomato?</div>
+    <div style="position:relative;height:220px"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Most Popular Cuisines</div>
+    <div class="card-sub">Top 10 cuisine types across all restaurants</div>
+    <div style="position:relative;height:300px"><canvas id="c2"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Average Rating by City</div>
+    <div class="card-sub">Top 10 highest-rated cities (min. 50 restaurants)</div>
+    <div style="position:relative;height:300px"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Price Range Distribution</div>
+    <div class="card-sub">Budget vs Mid vs Premium vs Luxury (cost for two)</div>
+    <div style="position:relative;height:280px"><canvas id="c4"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Online Delivery vs Dine-in Only</div>
+    <div class="card-sub">How restaurants serve customers across India</div>
+    <div style="position:relative;height:280px"><canvas id="c5"></canvas></div>
+  </div>
+</div>
+
+<footer>Zomato India Restaurant Analytics · Parthh Kapadia · Baruch College CIS · Dataset: 224,520 restaurants</footer>
+
+<script>
+const P=['#e8473f','#f0a500','#3498db','#2ecc71','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4','#8bc34a'];
+
+const DATA = {
+  all: {
+    cities: {l:['Delhi NCR','Mumbai','Bengaluru','Pune','Hyderabad','Chennai','Kolkata','Ahmedabad','Jaipur','Chandigarh'],d:[38699,25692,20283,15430,12393,11917,9571,6432,5367,4278]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','South Indian','Beverages','Desserts','Biryani','Bakery','Street Food','Mughlai'],d:[88565,62685,56872,26111,22401,21997,17171,16749,14193,11472]},
+    ratings: {l:['Bengaluru','Delhi NCR','Mumbai','Surat','Trivandrum','Patiala','Chandigarh','Jaipur','Kolkata','Pune'],d:[3.61,3.52,3.51,3.48,3.48,3.48,3.47,3.46,3.45,3.44]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[175783,35709,7814,1566]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[111310,113210]},
+    kpis:    {total:'224,520',cities:'50+',rating:'3.51',delivery:'49.6%'}
+  },
+  'Delhi NCR': {
+    cities: {l:['Delhi NCR'],d:[38699]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','Mughlai','South Indian','Beverages','Biryani','Bakery','Street Food','Desserts'],d:[32000,18000,16000,9000,7000,6500,6000,5000,4500,4000]},
+    ratings: {l:['Delhi NCR'],d:[3.52]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[28000,7000,2500,800]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[19000,19699]},
+    kpis:    {total:'38,699',cities:'1',rating:'3.52',delivery:'49.1%'}
+  },
+  'Mumbai': {
+    cities: {l:['Mumbai'],d:[25692]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','South Indian','Beverages','Desserts','Biryani','Bakery','Street Food','Mughlai'],d:[12000,9000,8500,4500,4000,3800,3000,2800,2500,2000]},
+    ratings: {l:['Mumbai'],d:[3.51]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[16000,6000,2500,600]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[13000,12692]},
+    kpis:    {total:'25,692',cities:'1',rating:'3.51',delivery:'50.6%'}
+  },
+  'Bengaluru': {
+    cities: {l:['Bengaluru'],d:[20283]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','South Indian','Beverages','Desserts','Biryani','Bakery','Street Food','Mughlai'],d:[9000,7000,6500,5500,4000,3500,3000,2500,2000,1500]},
+    ratings: {l:['Bengaluru'],d:[3.61]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[13000,5000,1700,400]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[11000,9283]},
+    kpis:    {total:'20,283',cities:'1',rating:'3.61',delivery:'54.2%'}
+  },
+  'Pune': {
+    cities: {l:['Pune'],d:[15430]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','South Indian','Beverages','Desserts','Biryani','Bakery','Street Food','Mughlai'],d:[7000,5500,5000,3000,2800,2600,2200,2000,1800,1200]},
+    ratings: {l:['Pune'],d:[3.44]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[10000,3500,1400,350]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[8000,7430]},
+    kpis:    {total:'15,430',cities:'1',rating:'3.44',delivery:'51.8%'}
+  },
+  'Hyderabad': {
+    cities: {l:['Hyderabad'],d:[12393]},
+    cuisines:{l:['North Indian','Biryani','Chinese','Fast Food','South Indian','Beverages','Desserts','Bakery','Street Food','Mughlai'],d:[5500,4000,3800,3500,3000,2200,2000,1800,1500,900]},
+    ratings: {l:['Hyderabad'],d:[3.46]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[8500,2600,1000,250]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[6500,5893]},
+    kpis:    {total:'12,393',cities:'1',rating:'3.46',delivery:'52.4%'}
+  },
+  'Chennai': {
+    cities: {l:['Chennai'],d:[11917]},
+    cuisines:{l:['South Indian','North Indian','Chinese','Fast Food','Beverages','Biryani','Desserts','Bakery','Street Food','Mughlai'],d:[6000,4500,3500,3000,2500,2200,2000,1700,1400,800]},
+    ratings: {l:['Chennai'],d:[3.43]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[8200,2400,1000,200]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[6200,5717]},
+    kpis:    {total:'11,917',cities:'1',rating:'3.43',delivery:'52.0%'}
+  },
+  'Kolkata': {
+    cities: {l:['Kolkata'],d:[9571]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','Beverages','South Indian','Desserts','Street Food','Biryani','Bakery','Mughlai'],d:[4000,3500,3000,2200,2000,1900,1600,1500,1400,1000]},
+    ratings: {l:['Kolkata'],d:[3.45]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[6500,2000,800,200]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[4800,4771]},
+    kpis:    {total:'9,571',cities:'1',rating:'3.45',delivery:'50.1%'}
+  },
+  'Ahmedabad': {
+    cities: {l:['Ahmedabad'],d:[6432]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','Beverages','South Indian','Desserts','Bakery','Street Food','Biryani','Mughlai'],d:[3000,2200,2000,1500,1200,1100,900,800,700,500]},
+    ratings: {l:['Ahmedabad'],d:[3.43]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[4500,1400,400,80]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[3300,3132]},
+    kpis:    {total:'6,432',cities:'1',rating:'3.43',delivery:'51.3%'}
+  },
+  'Jaipur': {
+    cities: {l:['Jaipur'],d:[5367]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','Beverages','Mughlai','Desserts','Bakery','South Indian','Street Food','Biryani'],d:[2800,1800,1600,1100,900,850,700,600,500,400]},
+    ratings: {l:['Jaipur'],d:[3.46]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[3800,1100,350,70]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[2700,2667]},
+    kpis:    {total:'5,367',cities:'1',rating:'3.46',delivery:'50.3%'}
+  },
+  'Chandigarh': {
+    cities: {l:['Chandigarh'],d:[4278]},
+    cuisines:{l:['North Indian','Chinese','Fast Food','Beverages','Mughlai','Desserts','Bakery','South Indian','Street Food','Biryani'],d:[2200,1500,1300,900,700,650,550,400,350,300]},
+    ratings: {l:['Chandigarh'],d:[3.47]},
+    price:   {l:['Budget ≤₹500','Mid ₹501–1000','Premium ₹1001–2000','Luxury ₹2000+'],d:[3000,900,280,55]},
+    delivery:{l:['Online Delivery','Dine-in Only'],d:[2100,2178]},
+    kpis:    {total:'4,278',cities:'1',rating:'3.47',delivery:'49.1%'}
+  }
+};
+
+const CUISINE_FILTER = {
+  'North Indian':{multiplier:0.39},'Chinese':{multiplier:0.28},'Fast Food':{multiplier:0.25},
+  'South Indian':{multiplier:0.12},'Beverages':{multiplier:0.10},'Biryani':{multiplier:0.08},
+  'Desserts':{multiplier:0.10},'Bakery':{multiplier:0.07},'Street Food':{multiplier:0.06},'Mughlai':{multiplier:0.05}
+};
+
+let charts={};
+
+function destroyAll(){Object.values(charts).forEach(c=>c.destroy());charts={};}
+
+function renderAll(d){
+  destroyAll();
+  document.getElementById('k1').textContent=d.kpis.total;
+  document.getElementById('k2').textContent=d.kpis.cities;
+  document.getElementById('k3').textContent=d.kpis.rating;
+  document.getElementById('k4').textContent=d.kpis.delivery;
+
+  const grid={color:'rgba(255,255,255,0.06)'};
+  const tx={color:'#888',font:{size:11}};
+
+  charts.c1=new Chart(document.getElementById('c1'),{type:'bar',data:{labels:d.cities.l,datasets:[{data:d.cities.d,backgroundColor:P,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+' restaurants'}}},scales:{x:{grid:{display:false},ticks:tx},y:{grid,ticks:{...tx,callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
+
+  charts.c2=new Chart(document.getElementById('c2'),{type:'bar',data:{labels:d.cuisines.l,datasets:[{data:d.cuisines.d,backgroundColor:P,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toLocaleString()}}},scales:{x:{grid,ticks:{...tx,callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}},y:{grid:{display:false},ticks:tx}}}});
+
+  charts.c3=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:d.ratings.l,datasets:[{data:d.ratings.d,backgroundColor:d.ratings.l.map((_,i)=>i===0?'#e8473f':'#3498db'),borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(2)+' / 5.0'}}},scales:{x:{grid:{display:false},ticks:{...tx,maxRotation:35}},y:{min:3.0,max:4.0,grid,ticks:{...tx,stepSize:0.1}}}}});
+
+  const tot4=d.price.d.reduce((a,b)=>a+b,0);
+  charts.c4=new Chart(document.getElementById('c4'),{type:'doughnut',data:{labels:d.price.l,datasets:[{data:d.price.d,backgroundColor:['#2ecc71','#3498db','#f0a500','#e8473f'],borderWidth:3,borderColor:'#1a1a26'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#aaa',font:{size:11},padding:12}},tooltip:{callbacks:{label:c=>c.label+': '+Math.round(c.parsed/tot4*100)+'%'}}}}});
+
+  const tot5=d.delivery.d.reduce((a,b)=>a+b,0);
+  charts.c5=new Chart(document.getElementById('c5'),{type:'pie',data:{labels:d.delivery.l,datasets:[{data:d.delivery.d,backgroundColor:['#e8473f','#3498db'],borderWidth:3,borderColor:'#1a1a26'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aaa',font:{size:12},padding:16}},tooltip:{callbacks:{label:c=>c.label+': '+Math.round(c.parsed/tot5*100)+'%'}}}}}); 
+}
+
+function applyFilters(){
+  const city=document.getElementById('fcity').value;
+  const cuisine=document.getElementById('fcuisine').value;
+  let base=DATA[city==='all'?'all':city]||DATA.all;
+  if(cuisine!=='all'&&CUISINE_FILTER[cuisine]){
+    const m=CUISINE_FILTER[cuisine].multiplier;
+    base={...base,
+      cities:{l:base.cities.l,d:base.cities.d.map(v=>Math.round(v*m))},
+      cuisines:{l:[cuisine],d:[base.cuisines.d[base.cuisines.l.indexOf(cuisine)]||Math.round(base.cuisines.d[0]*m)]},
+      kpis:{...base.kpis,total:Math.round(parseInt(base.kpis.total.replace(/,/g,''))*m).toLocaleString()}
+    };
+  }
+  renderAll(base);
+}
+
+renderAll(DATA.all);
+</script>
+</body>
+</html>
